@@ -12,11 +12,11 @@ save_image = True
 visible_image = False
 # set data_path
 # windows
-# data_path = 'E:\\zlh\\workspace\\python\\pro3_denoising\\DHDN_simulate\\dataset\\CBSD68'
+# data_path = 'E:\\zlh\\workspace\\python\\pro3_denoising\\DHDN_keras\\dataset\\CBSD68'
 # 225
-# data_path = '/media/tclwh2/wangshupeng/zoulihua/DHDN_simulate/dataset/CBSD68'
+# data_path = '/media/tclwh2/wangshupeng/zoulihua/DHDN_keras/dataset/CBSD68'
 # 11
-data_path = '/home/tcl/zoulihua/DHDN_simulate/dataset/CBSD68'
+data_path = '/home/tcl/zoulihua/DHDN_keras/dataset/CBSD68'
 
 load_model = True
 load_model_path = '../experiment/model/model_002-0.09.hdf5'

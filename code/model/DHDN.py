@@ -96,8 +96,8 @@ def DHDN():
     x = Conv2D(input_channel,1,padding='same')(x)
     outputs = x
 
-    model = Model(input=inputs,output=outputs)
-    model.summary()
+    model = Model(inputs=inputs,outputs=outputs)
+    # model.summary()
     return model
 
 

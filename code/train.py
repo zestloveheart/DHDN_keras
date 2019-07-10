@@ -1,6 +1,3 @@
-from model.DHDN import DHDN
-from util.data_script import load_images,add_noise,get_data
-from util.util import calculate_psnr
 from keras.callbacks import LearningRateScheduler,ModelCheckpoint,TensorBoard
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import Adam
@@ -8,6 +5,11 @@ from keras.losses import mean_absolute_error
 import os
 from pathlib import Path
 import tensorflow as tf
+
+from model.DHDN import DHDN
+from util.data_script import load_images,add_noise,get_data
+from util.util import calculate_psnr
+
 def learning_rate_schedule(epoch):
     return learning_rate/(2**(epoch//3))
 
@@ -22,15 +24,16 @@ learning_rate = 0.0001
 lr_drop = 20
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 noise_coefficient = 0.02
+
 # set data_path
 # windows
-# data_path = 'E:\\zlh\\workspace\\python\\pro3_denoising\\DHDN_simulate\\dataset\\CBSD68'
+# data_path = 'E:\\zlh\\workspace\\python\\pro3_denoising\\DHDN_keras\\dataset\\CBSD68'
 # 225
-# data_path = '/media/tclwh2/wangshupeng/zoulihua/DHDN_simulate/dataset/CBSD68'
+data_path = '/media/tclwh2/wangshupeng/zoulihua/DHDN_keras/dataset/CBSD68'
 # 11
-data_path = '/home/tcl/zoulihua/DHDN_simulate/dataset/CBSD68'
+# data_path = '/home/tcl/zoulihua/DHDN_keras/dataset/CBSD68'
 
-load_model = True
+load_model = False
 load_model_path = '../experiment/model/model_001-0.05.hdf5'
 
 # The data, shuffled and split between train and test sets:
@@ -68,9 +71,8 @@ validation_x,validation_y = validation_x/255,validation_y/255
 lrs = LearningRateScheduler(learning_rate_schedule, verbose=1)
 
 # checkpoint save
-
 model_prefix = "../experiment/model/"
-Path().mkdir(exist_ok=True,parents=True)
+Path(model_prefix).mkdir(exist_ok=True,parents=True)
 model_path = model_prefix + "model_{epoch:03d}-{loss:.2f}.hdf5"
 model_checkpoint = ModelCheckpoint(model_path, save_best_only=True, save_weights_only=True, mode='auto')
 
