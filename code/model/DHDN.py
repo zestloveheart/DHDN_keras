@@ -97,7 +97,6 @@ def DHDN():
     outputs = x
 
     model = Model(inputs=inputs,outputs=outputs)
-    # model.summary()
     return model
 
 

@@ -7,6 +7,7 @@ from pathlib import Path
 import tensorflow as tf
 
 from model.DHDN import DHDN
+from model.DIDN import DIDN
 from util.data_script import load_images,add_noise,get_data
 from util.util import calculate_psnr
 
@@ -17,28 +18,32 @@ def psnr_metrics(y_true,y_pred):
     # img1 and img2 have range [0, 1]
     return tf.image.psnr(y_true,y_pred,1)
 
+def model_loader(model_name,summary = False):
+    model_catalog = {"DHDN":DHDN,"DIDN":DIDN}
+    assert model_name in model_catalog, "the model_name is not exist !"
+    model = model_catalog[model_name]()
+    if summary:
+        model.summary()
+    return model
+
 # training configuration
 batch_size = 8
 max_epoches = 250
 learning_rate = 0.0001
-lr_drop = 20
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 noise_coefficient = 0.02
+model_name = "DHDN"
 
 # set data_path
-# windows
-# data_path = 'E:\\zlh\\workspace\\python\\pro3_denoising\\DHDN_keras\\dataset\\CBSD68'
-# 225
-data_path = '/media/tclwh2/wangshupeng/zoulihua/DHDN_keras/dataset/CBSD68'
-# 11
-# data_path = '/home/tcl/zoulihua/DHDN_keras/dataset/CBSD68'
+data_path = '..\\dataset\\CBSD68' # Windows
+# data_path = '../dataset/CBSD68' # Linux
 
+# set model_path
 load_model = False
 load_model_path = '../experiment/model/model_001-0.05.hdf5'
 
-# The data, shuffled and split between train and test sets:
-y_train = load_images(data_path) # get_data(data_path,0.01)
-
+# load data
+y_train = load_images(data_path)/255
 # data augmentation
 # we create two instances with the same arguments
 data_gen_args = dict(rotation_range=90,
@@ -50,46 +55,38 @@ data_gen_args = dict(rotation_range=90,
                     #  validation_split=0.1
                      )
 image_datagen = ImageDataGenerator(preprocessing_function=add_noise(var=noise_coefficient),**data_gen_args)
-mask_datagen = ImageDataGenerator(preprocessing_function=add_noise(var=0.),**data_gen_args)
-
+GT_datagen = ImageDataGenerator(preprocessing_function=add_noise(var=0.),**data_gen_args)
 # Provide the same seed and keyword arguments to the fit and flow methods
 # (std, mean, and principal components if ZCA whitening is applied).
 seed = 5
 # image_datagen.fit(x_train, augment=True, seed=seed)
-# mask_datagen.fit(y_train, augment=True, seed=seed)
-
-y_train = y_train/255
+# GT_datagen.fit(y_train, augment=True, seed=seed)
 image_generator = image_datagen.flow(y_train,batch_size=batch_size,seed=seed)
-mask_generator = mask_datagen.flow(y_train,batch_size=batch_size,seed=seed)
-
-# combine generators into one which yields image and masks
-train_generator = zip(image_generator, mask_generator)
-
+GT_generator = GT_datagen.flow(y_train,batch_size=batch_size,seed=seed)
+# combine generators into one which yields image and GT
+train_generator = zip(image_generator, GT_generator)
+# validation data
 validation_x,validation_y = get_data(data_path,var=noise_coefficient)
 validation_x,validation_y = validation_x/255,validation_y/255
+
+# callbacks
 # learning rate decrease
 lrs = LearningRateScheduler(learning_rate_schedule, verbose=1)
-
 # checkpoint save
 model_prefix = "../experiment/model/"
 Path(model_prefix).mkdir(exist_ok=True,parents=True)
-model_path = model_prefix + "model_{epoch:03d}-{loss:.2f}.hdf5"
+model_path = model_prefix + model_name +"_{epoch:03d}-{loss:.2f}.hdf5"
 model_checkpoint = ModelCheckpoint(model_path, save_best_only=True, save_weights_only=True, mode='auto')
-
 # tensorboard
 log_filepath = '../experiment/keras_log'
 tb_cb = TensorBoard(log_dir=log_filepath, write_images=1, histogram_freq=0)
-
 callbacks = [lrs, model_checkpoint,tb_cb]
 
-
-
+# create model
 # optimization details
 adam = Adam(lr=learning_rate)
-model = DHDN()
+model = model_loader(model_name)
 model.compile(loss=mean_absolute_error, optimizer=adam, metrics=['accuracy',psnr_metrics])
-
-
 if load_model:
     assert Path(load_model_path).exists(),'can not load the model from the path, maybe is not exist'
     model.load_weights(load_model_path)
@@ -102,10 +99,10 @@ if load_model:
 #                         validation_split=0.1,
 #                         shuffle=True)
 
-hostory_temp = model.fit_generator(train_generator,
-                    steps_per_epoch=y_train.shape[0] // batch_size,
-                    epochs=max_epoches,
-                    verbose=1,
-                    callbacks=callbacks,
-                    validation_data=(validation_x[-100:],validation_y[-100:])
-                    )
+# hostory_temp = model.fit_generator(train_generator,
+#                     steps_per_epoch=y_train.shape[0] // batch_size,
+#                     epochs=max_epoches,
+#                     verbose=1,
+#                     callbacks=callbacks,
+#                     validation_data=(validation_x[-100:],validation_y[-100:])
+#                     )

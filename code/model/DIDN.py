@@ -36,8 +36,8 @@ def downsampling_block(filter,factor=2):
 
 def upsampling_block(filter,factor=2):
     # from subpixel import SubpixelConv2D
-    # from model.subpixel import SubpixelConv2D
-    from subpixel import SubpixelConv2D
+    from model.subpixel import SubpixelConv2D
+    # from subpixel import SubpixelConv2D
     def wrapper(inputs):
         with tf.name_scope('up'+str(name_counter['up'])):
             name_counter['up']+=1
@@ -133,7 +133,6 @@ def DIDN():
     outputs = Add()([inputs,x])
 
     model = Model(inputs=inputs,outputs=outputs)
-    model.summary()
     return model
 
 def stats_graph(graph):

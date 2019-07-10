@@ -1,12 +1,12 @@
-from model.DHDN import DHDN
-from util.data_script import get_data
-from util.util import calculate_psnr,calculate_ssim,setup_logger
 import os
 from pathlib import Path
 from cv2 import cv2
 import numpy as np
 import logging
 
+from model.DHDN import DHDN
+from util.data_script import get_data
+from util.util import calculate_psnr,calculate_ssim,setup_logger
 os.environ["CUDA_VISIBLE_DEVICES"]="4"
 save_image = True
 visible_image = False
@@ -18,7 +18,6 @@ visible_image = False
 # 11
 data_path = '/home/tcl/zoulihua/DHDN_keras/dataset/CBSD68'
 
-load_model = True
 load_model_path = '../experiment/model/model_002-0.09.hdf5'
 result_path = '../result/'
 # The data, shuffled and split between train and test sets:
@@ -27,9 +26,8 @@ x_train, y_train = x_train/255, y_train/255
 
 model = DHDN()
 
-if load_model:
-    assert Path(load_model_path).exists(),'can not load the model from the path, maybe is not exist'
-    model.load_weights(load_model_path)
+assert Path(load_model_path).exists(),'can not load the model from the path, maybe is not exist'
+model.load_weights(load_model_path)
 
 setup_logger('base', result_path, 'test', level=logging.INFO, screen=True, tofile=True)
 logger = logging.getLogger('base')
