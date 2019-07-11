@@ -32,11 +32,11 @@ max_epoches = 250
 learning_rate = 0.0001
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 noise_coefficient = 0.02
-model_name = "DHDN"
+model_name = "DIDN"
 
 # set data_path
-data_path = '..\\dataset\\CBSD68' # Windows
-# data_path = '../dataset/CBSD68' # Linux
+# data_path = '..\\dataset\\CBSD68' # Windows
+data_path = '../dataset/CBSD68' # Linux
 
 # set model_path
 load_model = False
@@ -99,10 +99,10 @@ if load_model:
 #                         validation_split=0.1,
 #                         shuffle=True)
 
-# hostory_temp = model.fit_generator(train_generator,
-#                     steps_per_epoch=y_train.shape[0] // batch_size,
-#                     epochs=max_epoches,
-#                     verbose=1,
-#                     callbacks=callbacks,
-#                     validation_data=(validation_x[-100:],validation_y[-100:])
-#                     )
+hostory_temp = model.fit_generator(train_generator,
+                    steps_per_epoch=y_train.shape[0] // batch_size,
+                    epochs=max_epoches,
+                    verbose=1,
+                    callbacks=callbacks,
+                    validation_data=(validation_x[-100:],validation_y[-100:])
+                    )

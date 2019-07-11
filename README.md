@@ -8,10 +8,10 @@ DHDN(Densely Connected Hierarchical Network for Image Denoising) and DIDN(Deep I
 - Linux (if run in Windows, maybe need modify all path string, '/' to '\\')  
   
 # train and test
-cd code
+`cd code`
 ## train
 1. `vi train.py` modify training configuration and set path(data_path, load_model_path)
-2. python train.py
+2. `python train.py`
 
 ## test
-python test.py
+`python test.py`
