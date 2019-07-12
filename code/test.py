@@ -4,36 +4,30 @@ from cv2 import cv2
 import numpy as np
 import logging
 
-from model.DHDN import DHDN
+from model.model_util import model_getter
 from util.data_script import get_data
 from util.util import calculate_psnr,calculate_ssim,setup_logger
-os.environ["CUDA_VISIBLE_DEVICES"]="4"
+
+os.environ["CUDA_VISIBLE_DEVICES"]=""
 save_image = True
 visible_image = False
-# set data_path
-# windows
-# data_path = 'E:\\zlh\\workspace\\python\\pro3_denoising\\DHDN_keras\\dataset\\CBSD68'
-# 225
-# data_path = '/media/tclwh2/wangshupeng/zoulihua/DHDN_keras/dataset/CBSD68'
-# 11
-data_path = '/home/tcl/zoulihua/DHDN_keras/dataset/CBSD68'
+start, number = 85,10
+# set path
+# data_path = '..\\dataset\\CBSD68' # Windows
+data_path = '../dataset/CBSD68' # Linux
+model_name = "DHDN"
+load_model_path = '../experiment/model/DHDN_014-0.02.hdf5'
+result_path = '../experiment/result/'
 
-load_model_path = '../experiment/model/model_002-0.09.hdf5'
-result_path = '../result/'
 # The data, shuffled and split between train and test sets:
 x_train, y_train = get_data(data_path,0.02)
 x_train, y_train = x_train/255, y_train/255
 
-model = DHDN()
+model = model_getter(model_name,load_model_path)
 
-assert Path(load_model_path).exists(),'can not load the model from the path, maybe is not exist'
-model.load_weights(load_model_path)
-
+Path(result_path).mkdir(exist_ok=True,parents=True)
 setup_logger('base', result_path, 'test', level=logging.INFO, screen=True, tofile=True)
 logger = logging.getLogger('base')
-
-
-start, number = 85,10
 logger.info(f'Test {start} to {start+ number} Model : {load_model_path}')
 sum_psnr = 0
 for index,noise_img in enumerate(x_train[start:start+number]):

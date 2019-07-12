@@ -6,8 +6,7 @@ import os
 from pathlib import Path
 import tensorflow as tf
 
-from model.DHDN import DHDN
-from model.DIDN import DIDN
+from model.model_util import model_getter
 from util.data_script import load_images,add_noise,get_data
 from util.util import calculate_psnr
 
@@ -17,14 +16,6 @@ def learning_rate_schedule(epoch):
 def psnr_metrics(y_true,y_pred):
     # img1 and img2 have range [0, 1]
     return tf.image.psnr(y_true,y_pred,1)
-
-def model_loader(model_name,summary = False):
-    model_catalog = {"DHDN":DHDN,"DIDN":DIDN}
-    assert model_name in model_catalog, "the model_name is not exist !"
-    model = model_catalog[model_name]()
-    if summary:
-        model.summary()
-    return model
 
 # training configuration
 batch_size = 8
@@ -39,8 +30,7 @@ model_name = "DIDN"
 data_path = '../dataset/CBSD68' # Linux
 
 # set model_path
-load_model = False
-load_model_path = '../experiment/model/model_001-0.05.hdf5'
+load_model_path = '' # '../experiment/model/model_001-0.05.hdf5'
 
 # load data
 y_train = load_images(data_path)/255
@@ -85,11 +75,8 @@ callbacks = [lrs, model_checkpoint,tb_cb]
 # create model
 # optimization details
 adam = Adam(lr=learning_rate)
-model = model_loader(model_name)
+model = model_getter(model_name,load_model_path)
 model.compile(loss=mean_absolute_error, optimizer=adam, metrics=['accuracy',psnr_metrics])
-if load_model:
-    assert Path(load_model_path).exists(),'can not load the model from the path, maybe is not exist'
-    model.load_weights(load_model_path)
 
 # training
 # hostory_temp = model.fit(x_train,y_train,
@@ -99,10 +86,10 @@ if load_model:
 #                         validation_split=0.1,
 #                         shuffle=True)
 
-hostory_temp = model.fit_generator(train_generator,
-                    steps_per_epoch=y_train.shape[0] // batch_size,
-                    epochs=max_epoches,
-                    verbose=1,
-                    callbacks=callbacks,
-                    validation_data=(validation_x[-100:],validation_y[-100:])
-                    )
+# hostory_temp = model.fit_generator(train_generator,
+#                     steps_per_epoch=y_train.shape[0] // batch_size,
+#                     epochs=max_epoches,
+#                     verbose=1,
+#                     callbacks=callbacks,
+#                     validation_data=(validation_x[-100:],validation_y[-100:])
+#                     )
