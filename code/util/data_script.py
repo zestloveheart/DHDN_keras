@@ -4,6 +4,7 @@ from cv2 import cv2
 import skimage
 from tqdm import tqdm
 
+
 def measure_power(x):
     return float(sum([(float(1) / float(len(x))) * numpy.absolute(x[i]) ** 2 for i in range(0, len(x))]))
 
@@ -42,27 +43,58 @@ def get_patch(img,size=64):
     return patchs
 
 # generate 64x64 patch image for train
-def patch_generator(input_path,output_path):
+def patch_generator(input_path):
     p = Path(input_path)
+    output_path = input_path+"_patch/"
+    Path(output_path).mkdir(exist_ok=True,parents=True)
+    index = 0
     for image_path in tqdm(p.rglob('*.png')):
         img = cv2.imread(str(image_path))
         imgs = get_patch(img)
+        for i,patch in enumerate(imgs):
+            cv2.imwrite(output_path+str(index)+".png",patch)
+            index+=1
         
-def load_images(input_path):
+# load images for train
+def load_images(input_path,factor):
     p = Path(input_path)
     images = []
     for image_path in tqdm(p.rglob('*.png')):
-        img = cv2.imread(str(image_path))
-        img = get_patch(img)
-        images += img
+        if numpy.random.random_integers(1,10) % factor == 0:
+            img = cv2.imread(str(image_path))
+            images.append(img)
     return numpy.array(images)
 
+# load data for test
 def get_data(input_path,var=0.02):
     images = load_images(input_path)
-    noise_image = skimage.util.random_noise(images, mode='gaussian',mean=0,var=var)
-    noise_image = (noise_image*255).astype(numpy.uint8)
-    return noise_image,images
-        
+    noise_images = []
+    for i in images:
+        noise_image = skimage.util.random_noise(i, mode='gaussian',mean=0,var=var)
+        noise_image = (noise_image*255).astype(numpy.uint8)
+        noise_images.append(noise_image)
+    return numpy.array(noise_images),numpy.array(images)
+
+def divide_image(img,size=64):
+    origin_shape = img.shape
+    des_img = numpy.zeros((size*(origin_shape[0]//size+1),size*(origin_shape[1]//size+1),3),img.dtype)
+    des_img[:origin_shape[0],:origin_shape[1],:] = img
+    patches = []
+    for i in range(0,des_img.shape[0],size):
+        for j in range(0,des_img.shape[1],size):
+            patches.append(des_img[i:i+size,j:j+size,:])
+    return numpy.array(patches)
+
+def merge_image(patches,img,size=64):
+    origin_shape = img.shape
+    des_img = numpy.zeros((size*(origin_shape[0]//size+1),size*(origin_shape[1]//size+1),3),img.dtype)
+    index = 0
+    for i in range(0,des_img.shape[0],size):
+        for j in range(0,des_img.shape[1],size):
+            des_img[i:i+size,j:j+size,:] = patches[index]
+            index += 1
+    return des_img[:origin_shape[0],:origin_shape[1],:]
+            
 
 # data argument for keras 
 def add_noise(var=0.02):
