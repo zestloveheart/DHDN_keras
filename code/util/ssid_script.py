@@ -43,3 +43,4 @@ def load_benchmark(input_path):
     noise_files = []
     for i in p.rglob("*.PNG"):
         noise_files.append(cv2.imread(str(i)))
+    return numpy.array(noise_files)
