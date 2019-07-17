@@ -18,9 +18,9 @@ def DCR2(filter):
     def wrapper(inputs):
         with tf.name_scope('DCR2'+str(name_counter['DCR2'])):
             name_counter['DCR2']+=1
-            x = Conv2D(filter,1,padding='same')(inputs)
+            x = Conv2D(filter//2,1,padding='same')(inputs)
             x = PReLU(shared_axes=[1, 2])(x)
-            x = SeparableConv2D(filter,3,padding='same',depth_multiplier=32)(x)
+            x = SeparableConv2D(filter//2,3,padding='same',depth_multiplier=32)(x)
             x = PReLU(shared_axes=[1, 2])(x)
             x = Conv2D(filter,1,padding='same')(x)
             x = PReLU(shared_axes=[1, 2])(x)
@@ -50,19 +50,12 @@ def downsampling_block(filter,factor=2):
     return wrapper
 
 def upsampling_block(filter,factor=2):
-    from subpixel import SubpixelConv2D
-    # from model.subpixel import SubpixelConv2D
+    # from subpixel import SubpixelConv2D
+    from model.subpixel import SubpixelConv2D
     def wrapper(inputs):
         with tf.name_scope('up'+str(name_counter['up'])):
-            x = Conv2D(filter*2,1,padding='same')(inputs)
+            x = Conv2D(filter*4,3,padding='same')(inputs)
             x = PReLU(shared_axes=[1, 2])(x)
-            x = SeparableConv2D(filter*2,3,padding='same',depth_multiplier=32)(x)
-            x = PReLU(shared_axes=[1, 2])(x)
-            x = Conv2D(filter*4,1,padding='same')(x)
-            x = PReLU(shared_axes=[1, 2])(x)
-            x = Add()([inputs,x])
-            x = PReLU(shared_axes=[1, 2])(x)
-
             # the paper is sub-pix interpolation, the implement is different, I haven't study the sub-pix's detail
             # maybe it will decrease the efficient
             x = SubpixelConv2D(upsampling_factor=2)(x)
@@ -103,7 +96,7 @@ def DHDN():
     outputs = x
 
     model = Model(inputs=inputs,outputs=outputs)
-    model.summary()
+    # model.summary()
     return model
 
 

@@ -56,7 +56,7 @@ def patch_generator(input_path):
             index+=1
         
 # load images for train
-def load_images(input_path,factor):
+def load_images(input_path,factor=1):
     p = Path(input_path)
     images = []
     for image_path in tqdm(p.rglob('*.png')):

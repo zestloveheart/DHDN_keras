@@ -51,8 +51,8 @@ def downsampling_block(filter,factor=2):
     return wrapper
 
 def upsampling_block(filter,factor=2):
-    # from subpixel import SubpixelConv2D
-    from model.subpixel import SubpixelConv2D
+    from subpixel import SubpixelConv2D
+    # from model.subpixel import SubpixelConv2D
     def wrapper(inputs):
         with tf.name_scope('up'+str(name_counter['up'])):
             x = Conv2D(filter*4,3,padding='same')(inputs)
@@ -97,6 +97,7 @@ def DHDN():
     outputs = x
 
     model = Model(inputs=inputs,outputs=outputs)
+    # model.summary()
     return model
 
 
