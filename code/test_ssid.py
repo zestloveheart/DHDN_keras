@@ -8,6 +8,7 @@ from model.model_util import model_getter
 from util.data_script import get_data,divide_image,merge_image
 from util.util import calculate_psnr,calculate_ssim,setup_logger
 from util.ssid_script import load_benchmark
+
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 save_image = True
 visible_image = False

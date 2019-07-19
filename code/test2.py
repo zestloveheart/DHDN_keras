@@ -1,45 +1,73 @@
+from keras.preprocessing.image import ImageDataGenerator
 import os
 from pathlib import Path
-from cv2 import cv2
-import numpy as np
-import logging
+import tensorflow as tf
 
-from util.data_script import get_data
-from util.util import calculate_psnr,calculate_ssim,setup_logger
+from util.data_script import load_images,add_noise,patch_generator
+import time
+# training configuration
+batch_size = 8
+max_epoches = 250
+learning_rate = 0.0001
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+noise_coefficient = 0.02
+model_name = "DHDN"
 
-os.environ["CUDA_VISIBLE_DEVICES"]=""
-save_image = True
-visible_image = False
-start, number = 85,10
-# set path
+# set data_path
 # data_path = '..\\dataset\\CBSD68' # Windows
 data_path = '../dataset/CBSD68' # Linux
 
-# The data, shuffled and split between train and test sets:
-x_train, y_train = get_data(data_path,0.02)
-x_train, y_train = x_train/255, y_train/255
+
+import psutil
 
 
-setup_logger('base', result_path, 'test', level=logging.INFO, screen=True, tofile=True)
-logger = logging.getLogger('base')
-logger.info(f'Test {start} to {start+ number} Model : {load_model_path}')
-sum_psnr = 0
-for index,noise_img in enumerate(x_train[start:start+number]):
-    temp_img = np.reshape(noise_img,(1,64,64,3))
-    groundtruth_img = y_train[start+index]
 
-    noise_img*=255
-    denoise_img*=255
-    groundtruth_img*=255
 
-    logger.info(f"img : {start+index} {index}/{number}")
-    logger.info(f"noise / groundtruth : psnr {calculate_psnr(noise_img,groundtruth_img)} ; ssim {calculate_ssim(noise_img,groundtruth_img)}")
-    logger.info(f"denoise / groundtruth : psnr {calculate_psnr(denoise_img,groundtruth_img)} ; ssim {calculate_ssim(denoise_img,groundtruth_img)}")
-    sum_psnr += calculate_psnr(denoise_img,groundtruth_img)
 
-    if visible_image:
-        cv2.imshow(f"{start+index}_noise.png",noise_img)
-        cv2.imshow(f"{start+index}_denoise.png",denoise_img)
-        cv2.imshow(f"{start+index}_groundtruth.png",groundtruth_img)
-        cv2.waitKey(0)
-logger.info(f"Average psnr : {sum_psnr/number}")
+# # set model_path
+# load_model_path = '../experiment/model/DHDN_015-0.02.hdf5'
+
+# if not Path(data_path+"_patch").exists():
+#     patch_generator(data_path)
+# data_path+="_patch"
+
+# # load data
+
+# # data augmentation
+# # we create two instances with the same arguments
+data_gen_args = dict(rotation_range=90,
+                     width_shift_range=0.1,
+                     height_shift_range=0.1,
+                     zoom_range=0.2,
+                     horizontal_flip=True,
+                     vertical_flip=True,
+                    #  validation_split=0.1
+                     )
+
+test_datagen = ImageDataGenerator(**data_gen_args)
+for i in test_datagen.flow_from_directory(data_path,target_size = (64,64),batch_size=8,class_mode=None):
+    print(i.shape)
+    info = psutil.virtual_memory()
+    print(u'内存使用：',psutil.Process(os.getpid()).memory_info().rss)
+    print(u'总内存：',info.total)
+    print(u'内存占比：',info.percent)
+    print(u'cpu个数：',psutil.cpu_count())
+    time.sleep(1)
+    
+# image_datagen = ImageDataGenerator(preprocessing_function=add_noise(var=noise_coefficient),**data_gen_args)
+GT_datagen = ImageDataGenerator(**data_gen_args)
+# # Provide the same seed and keyword arguments to the fit and flow methods
+# # (std, mean, and principal components if ZCA whitening is applied).
+seed = 5
+# # image_datagen.fit(x_train, augment=True, seed=seed)
+# GT_datagen.fit(y_train, augment=True, seed=seed)
+# image_generator = image_datagen.flow(y_train,batch_size=batch_size,seed=seed)
+for i in GT_datagen.flow(y_train,batch_size=batch_size,seed=seed):
+    print(i.shape)
+
+    time.sleep(1)
+# # combine generators into one which yields image and GT
+# train_generator = zip(image_generator, GT_generator)
+# # validation data
+# # validation_x,validation_y = get_data(data_path,var=noise_coefficient)
+# # validation_x,validation_y = validation_x/255,validation_y/255

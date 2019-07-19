@@ -21,12 +21,12 @@ def DCR(filter):
             origin_input = inputs
             for _ in range(2):
                 x = Conv2D(filter//2,3,padding='same')(inputs)
-                x = PReLU(shared_axes=[1, 2])(x)
+                x = PReLU(shared_axes=[1, 2, 3])(x)
                 inputs = Concatenate()([inputs,x])
             x = Conv2D(filter,3,padding='same')(inputs)
-            x = PReLU(shared_axes=[1, 2])(x)
+            x = PReLU(shared_axes=[1, 2, 3])(x)
             x = Add()([origin_input,x])
-            x = PReLU(shared_axes=[1, 2])(x)
+            x = PReLU(shared_axes=[1, 2, 3])(x)
         return x
     return wrapper
 
@@ -45,18 +45,18 @@ def downsampling_block(filter,factor=2):
         with tf.name_scope('down'+str(name_counter['down'])):
             x = MaxPooling2D(factor,factor)(inputs)
             x = Conv2D(filter,3,padding='same')(x)
-            x = PReLU(shared_axes=[1, 2])(x)
+            x = PReLU(shared_axes=[1, 2, 3])(x)
             name_counter['down']+=1
         return x
     return wrapper
 
 def upsampling_block(filter,factor=2):
-    from subpixel import SubpixelConv2D
-    # from model.subpixel import SubpixelConv2D
+    # from subpixel import SubpixelConv2D
+    from model.subpixel import SubpixelConv2D
     def wrapper(inputs):
         with tf.name_scope('up'+str(name_counter['up'])):
             x = Conv2D(filter*4,3,padding='same')(inputs)
-            x = PReLU(shared_axes=[1, 2])(x)
+            x = PReLU(shared_axes=[1, 2, 3])(x)
             # the paper is sub-pix interpolation, the implement is different, I haven't study the sub-pix's detail
             # maybe it will decrease the efficient
             x = SubpixelConv2D(upsampling_factor=2)(x)
@@ -67,7 +67,7 @@ def upsampling_block(filter,factor=2):
 
 def DHDN():
     input_channel = 3
-    input_shape = (64,64,input_channel)
+    input_shape = (None,None,input_channel)
     init_filter = 128
     level_number = 3
     
@@ -97,9 +97,8 @@ def DHDN():
     outputs = x
 
     model = Model(inputs=inputs,outputs=outputs)
-    # model.summary()
+    model.summary()
     return model
-
 
 def stats_graph(graph):
     import tensorflow as tf
