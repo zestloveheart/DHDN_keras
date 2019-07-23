@@ -1,5 +1,4 @@
 from keras.callbacks import LearningRateScheduler,ModelCheckpoint,TensorBoard
-from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import Adam
 from keras.losses import mean_absolute_error
 import os
@@ -7,9 +6,9 @@ from pathlib import Path
 import tensorflow as tf
 
 from model.model_util import model_getter
-from util.data_script import load_images,add_noise,patch_generator
-from util.util import calculate_psnr
 from util.MatDataLoader import MatDataLoader
+from util.util import calculate_psnr
+
 def learning_rate_schedule(epoch):
     return learning_rate/(2**(epoch//3))
 
@@ -23,7 +22,7 @@ max_epoches = 250
 learning_rate = 0.0001
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 noise_coefficient = 0.02
-model_name = "DHDN"
+model_name = "DHDN_raw"
 
 # set data_path
 # data_path = '..\\dataset\\CBSD68' # Windows

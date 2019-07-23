@@ -1,7 +1,6 @@
 from keras.layers import Input,PReLU,Conv2D,Add,Concatenate
 from keras.layers import MaxPooling2D,UpSampling2D
 from keras.models import Model
-from keras import backend as K
 import keras 
 import tensorflow as tf
 
@@ -134,22 +133,3 @@ def DIDN():
 
     model = Model(inputs=inputs,outputs=outputs)
     return model
-
-def stats_graph(graph):
-    import tensorflow as tf
-    flops = tf.profiler.profile(graph, options=tf.profiler.ProfileOptionBuilder.float_operation())
-    params = tf.profiler.profile(graph, options=tf.profiler.ProfileOptionBuilder.trainable_variables_parameter())
-    print('FLOPs: {};    Trainable params: {}'.format(flops.total_float_ops, params.total_parameters))
-
-def test_flops():
-    DIDN()
-    sess = K.get_session()
-    graph = sess.graph
-    stats_graph(graph)
-
-if __name__ == "__main__":
-    DIDN()
-    with tf.Session() as sess:
-        # sess.run(tf.global_variables_initializer())
-        writer = tf.summary.FileWriter("E:/TensorBoard",sess.graph)
-        writer.close()

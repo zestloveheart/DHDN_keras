@@ -4,7 +4,6 @@ from cv2 import cv2
 import skimage
 from tqdm import tqdm
 
-
 def measure_power(x):
     return float(sum([(float(1) / float(len(x))) * numpy.absolute(x[i]) ** 2 for i in range(0, len(x))]))
 
@@ -32,28 +31,6 @@ def test_noise():
     plot.plot(x, y)
     plot.plot(x, z)
     plot.show()
-
-# get n * img(64x64) from a whole img
-def get_patch(img,size=64):
-    patchs = []
-    for i in range(0,img.shape[0],size):
-        for j in range(0,img.shape[1],size):
-            if i+size < img.shape[0] and j+size < img.shape[1]:
-                patchs.append(img[i:i+size,j:j+size,:])
-    return patchs
-
-# generate 64x64 patch image for train
-def patch_generator(input_path):
-    p = Path(input_path)
-    output_path = input_path+"_patch/"
-    Path(output_path).mkdir(exist_ok=True,parents=True)
-    index = 0
-    for image_path in tqdm(p.rglob('*.png')):
-        img = cv2.imread(str(image_path))
-        imgs = get_patch(img)
-        for i,patch in enumerate(imgs):
-            cv2.imwrite(output_path+str(index)+".png",patch)
-            index+=1
         
 # load images for train
 def load_images(input_path,factor=1):
@@ -95,13 +72,6 @@ def merge_image(patches,img,size=64):
             index += 1
     return des_img[:origin_shape[0],:origin_shape[1],:]
             
-
-# data argument for keras 
-def add_noise(var=0.02):
-    def noising(image):
-        return skimage.util.random_noise(image, mode='gaussian',mean=0,var=var)
-    return noising
-
 
 def test_generator():
     from util import calculate_psnr

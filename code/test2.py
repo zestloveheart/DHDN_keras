@@ -53,21 +53,3 @@ for i in test_datagen.flow_from_directory(data_path,target_size = (64,64),batch_
     print(u'内存占比：',info.percent)
     print(u'cpu个数：',psutil.cpu_count())
     time.sleep(1)
-    
-# image_datagen = ImageDataGenerator(preprocessing_function=add_noise(var=noise_coefficient),**data_gen_args)
-GT_datagen = ImageDataGenerator(**data_gen_args)
-# # Provide the same seed and keyword arguments to the fit and flow methods
-# # (std, mean, and principal components if ZCA whitening is applied).
-seed = 5
-# # image_datagen.fit(x_train, augment=True, seed=seed)
-# GT_datagen.fit(y_train, augment=True, seed=seed)
-# image_generator = image_datagen.flow(y_train,batch_size=batch_size,seed=seed)
-for i in GT_datagen.flow(y_train,batch_size=batch_size,seed=seed):
-    print(i.shape)
-
-    time.sleep(1)
-# # combine generators into one which yields image and GT
-# train_generator = zip(image_generator, GT_generator)
-# # validation data
-# # validation_x,validation_y = get_data(data_path,var=noise_coefficient)
-# # validation_x,validation_y = validation_x/255,validation_y/255

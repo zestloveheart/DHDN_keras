@@ -64,7 +64,7 @@ def upsampling_block(filter,factor=2):
     return wrapper
 
 def DHDN():
-    input_channel = 3
+    input_channel = 4
     input_shape = (None,None,input_channel)
     init_filter = 128
     level_number = 3
